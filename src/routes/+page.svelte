@@ -1,7 +1,10 @@
 <script lang="ts">
 	import Button from '$lib/Button.svelte';
-	import LabelInput from '$lib/LabelInput.svelte';
+	import CenterEnd from '$lib/CenterEnd.svelte';
+	import Heading2 from '$lib/Heading2.svelte';
+	import LabelInputButton from '$lib/LabelInputButton.svelte';
 	import LabelSelect from '$lib/LabelSelect.svelte';
+	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -21,8 +24,6 @@
 			? notifications.find((x: { notificationId: string }) => x.notificationId === notificationId)
 			: []
 	);
-
-	let hideOthers = $state(false);
 
 	async function configure() {
 		const result = await fetch('/configure', {
@@ -83,6 +84,20 @@
 		alert(errorMessage === undefined ? 'Synchronization requested.' : errorMessage);
 	}
 
+	async function acknowledge() {
+		const result = await fetch('/notification/ack', {
+			method: 'POST',
+			body: JSON.stringify({ notificationId })
+		});
+		const { errorMessage } = await result.json();
+		if (errorMessage === undefined) {
+			notifications.splice(notifications.indexOf(notificationId), 1);
+			notificationId = notifications.length > 0 ? notifications[0].notificationId : '';
+		} else {
+			alert(errorMessage);
+		}
+	}
+
 	async function pullNotifications() {
 		notifications = await getNotifications();
 	}
@@ -130,59 +145,48 @@
 	<script src="https://link.deck.co/link-initialize.js"></script>
 </svelte:head>
 
-<div class="mx-auto w-4xl">
-	<h1 class="mt-6 text-4xl">Integration Quickstart</h1>
-	{#if !hideOthers}
-		<h2 class="mt-4 mb-4 text-2xl">Configuration</h2>
-		<div class="mb-6 flex flex-wrap">
-			<div class="w-full">
-				<LabelInput
-					bind:value={callback}
-					label="Notification Callback URL"
-					type="url"
-					id="callback"
-				/>
-				<Button label="Configure" onclick={configure} />
-			</div>
-		</div>
+<div class="mx-6 sm:mx-auto sm:w-2xl">
+	<div class="mb-6 sm:mx-6">
+		<h1 class="mt-2 text-center text-2xl sm:mt-6 sm:text-left sm:text-3xl">
+			Integration Quickstart
+		</h1>
+		<Heading2>Configuration</Heading2>
+		<LabelInputButton
+			label="Notification Callback URL"
+			type="url"
+			id="callback"
+			buttonLabel="Configure"
+			onclick={configure}
+			bind:value={callback}
+		/>
 
-		<h2 class="mt-4 mb-4 text-2xl">Link</h2>
-		<div class="mb-6 flex flex-wrap">
-			<div class="w-1/7">
-				<LabelSelect
-					label="Language"
-					id="language"
-					bind:value={language}
-					options={[
-						'EN',
-						'ES',
-						'FR',
-						'DE',
-						'IT',
-						'PT',
-						'NL',
-						'PL',
-						'SV',
-						'DA',
-						'NO',
-						'ET',
-						'LT',
-						'LV',
-						'RO'
-					].map(simpleOption)}
-				/>
-			</div>
-
-			<div class="flex w-full flex-wrap">
-				<LabelSelect
-					label="Update Subscription"
-					id="update-subscription"
-					{isStar}
-					bind:value={updateSubscription}
-					options={(subscriptions ?? []).map(subscriptionOption)}
-				/>
-			</div>
-			<div class="w-full">
+		<Heading2>Link</Heading2>
+		<Section>
+			<div class="flex gap-2">
+				<div class="w-1/7">
+					<LabelSelect
+						label="Language"
+						id="language"
+						bind:value={language}
+						options={[
+							'EN',
+							'ES',
+							'FR',
+							'DE',
+							'IT',
+							'PT',
+							'NL',
+							'PL',
+							'SV',
+							'DA',
+							'NO',
+							'ET',
+							'LT',
+							'LV',
+							'RO'
+						].map(simpleOption)}
+					/>
+				</div>
 				<div class="w-1/2">
 					<LabelSelect
 						label="Update Mode"
@@ -193,53 +197,54 @@
 						)}
 					/>
 				</div>
+
+				<div>
+					<LabelSelect
+						label="Update Subscription"
+						id="update-subscription"
+						{isStar}
+						bind:value={updateSubscription}
+						options={(subscriptions ?? []).map(subscriptionOption)}
+					/>
+				</div>
 			</div>
-			<div class="w-1/3">
+			<CenterEnd>
 				<Button label="Create Link" onclick={createLink} />
-			</div>
-		</div>
+			</CenterEnd>
+		</Section>
 
-		<h2 class="mt-4 mb-4 text-2xl">Synchronize</h2>
-		<div class="mb-6 flex flex-wrap">
-			<div class="w-full">
-				<LabelSelect
-					label="Synchronize Subscription"
-					id="synchronize-subscription"
-					{isStar}
-					bind:value={synchronizeSubscription}
-					options={(subscriptions ?? []).map(subscriptionOption)}
-				/>
-			</div>
-			<div class="w-1/3">
-				<Button label="Synchronize" onclick={synchronize} />
-			</div>
-		</div>
-	{/if}
-
-	<h2 class="mt-4 mb-4 text-2xl">Notifications</h2>
-	<div class="mb-6 flex flex-wrap">
-		<div class="mb-6 w-1/3">
-			{#if hideOthers}
-				<Button label="Show Others" onclick={() => (hideOthers = false)} />
-			{:else}
-				<Button label="Hide Others" onclick={() => (hideOthers = true)} />
-			{/if}
-			<Button label="Pull Notifications" onclick={pullNotifications} />
-		</div>
-		<div class="w-full">
+		<Heading2>Synchronize</Heading2>
+		<Section>
 			<LabelSelect
-				label="Notifications"
+				label="Synchronize Subscription"
+				id="synchronize-subscription"
+				{isStar}
+				bind:value={synchronizeSubscription}
+				options={(subscriptions ?? []).map(subscriptionOption)}
+			/>
+			<CenterEnd>
+				<Button label="Synchronize" onclick={synchronize} />
+			</CenterEnd>
+		</Section>
+
+		<Heading2>Notifications</Heading2>
+		<Section>
+			<LabelSelect
+				label="Selected Notification"
 				id="notifications"
 				bind:value={notificationId}
 				options={(notifications ?? []).map(notificationOption)}
 			/>
-		</div>
-		{#if notification !== undefined}
-			<div class="mb-6 w-1/3">
-				<Button label="JSON" onclick={() => download('Json')} />
-				<Button label="PDF" onclick={() => download('Pdf')} />
-				<Button label="Acknowledge" onclick={() => {}} />
-			</div>
-		{/if}
+			<CenterEnd>
+				<div class="flex gap-2">
+					<Button label="Pull Notifications" onclick={pullNotifications} />
+					{#if notification !== undefined}
+						<Button label="JSON" onclick={() => download('Json')} />
+						<Button label="PDF" onclick={() => download('Pdf')} />
+						<Button label="Acknowledge" onclick={acknowledge} />
+					{/if}
+				</div>
+			</CenterEnd>
+		</Section>
 	</div>
 </div>
