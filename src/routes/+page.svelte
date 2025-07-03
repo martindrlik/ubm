@@ -117,6 +117,13 @@
 	function isStar(value: string): boolean {
 		return mostRecentSubscription === value;
 	}
+
+	function download(type: 'Json' | 'Pdf') {
+		const link = document.createElement('a');
+		link.href = `/notification/content?notificationId=${notificationId}&type=${type}`;
+		link.download = `${notificationId}.${type.toLowerCase()}`;
+		link.click();
+	}
 </script>
 
 <svelte:head>
@@ -229,8 +236,8 @@
 		</div>
 		{#if notification !== undefined}
 			<div class="mb-6 w-1/3">
-				<Button label="JSON" onclick={() => {}} />
-				<Button label="PDF" onclick={() => {}} />
+				<Button label="JSON" onclick={() => download('Json')} />
+				<Button label="PDF" onclick={() => download('Pdf')} />
 				<Button label="Acknowledge" onclick={() => {}} />
 			</div>
 		{/if}

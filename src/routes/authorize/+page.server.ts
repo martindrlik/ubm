@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { AUTHORIZATION, TENANT } from '$env/static/private';
+import { getString } from '$lib/formData';
 
 export const load: PageServerLoad = async () => {
 	const jwt = AUTHORIZATION;
@@ -19,7 +20,3 @@ export const actions = {
 		redirect(303, '/');
 	}
 } satisfies Actions;
-
-function getString(formValue: FormDataEntryValue | null): string {
-	return typeof formValue === 'string' ? formValue : '';
-}
