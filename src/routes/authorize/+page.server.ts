@@ -14,9 +14,9 @@ export const load: PageServerLoad = async () => {
 export const actions = {
 	default: async ({ request, cookies }) => {
 		const data = await request.formData();
-		cookies.set('tenant', getString(data.get('tenant')), { path: '/ubm' });
-		cookies.set('jwt', getString(data.get('jwt')), { path: '/ubm' });
-		redirect(303, '/ubm');
+		cookies.set('tenant', getString(data.get('tenant')), { path: '/' });
+		cookies.set('jwt', getString(data.get('jwt')), { path: '/' });
+		redirect(303, '/');
 	}
 } satisfies Actions;
 

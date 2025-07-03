@@ -1,85 +1,55 @@
 import { BASE_URL } from '$env/static/private';
-import { redirect } from '@sveltejs/kit';
+import { redirect, type Cookies } from '@sveltejs/kit';
 
-function jsonHeaders(locals: App.Locals) {
+export function headersPostJson(jwt: string, tenant: string) {
 	return {
-		authorization: locals.jwt,
-		'x-q-tenant-id': locals.tenant,
+		authorization: jwt,
+		'x-q-tenant-id': tenant,
 		'content-type': 'application/json'
 	};
 }
 
-function headers(locals: App.Locals) {
+export function headersGet(jwt: string, tenant: string) {
 	return {
-		authorization: locals.jwt,
-		'x-q-tenant-id': locals.tenant
+		authorization: jwt,
+		'x-q-tenant-id': tenant
 	};
 }
 
-export async function postConfiguration(locals: App.Locals, notificationCallbackUrl: string) {
-	const result = await fetch(BASE_URL + 'configuration', {
-		method: 'POST',
-		headers: jsonHeaders(locals),
-		body: JSON.stringify({ notificationCallbackUrl })
-	});
-	return redirectIf401(result);
-}
-
-export async function getLink(
-	locals: App.Locals,
-	language: string | undefined,
-	updateSubscriptionId: string | undefined,
-	updateMode: string | undefined
-) {
-	const result = await fetch(
-		BASE_URL +
-			`link?language=${language}&updateSubscriptionId=${updateSubscriptionId}&updateMode=${updateMode}`,
-		{
-			method: 'GET',
-			headers: headers(locals)
-		}
-	);
-	return redirectIf401(result);
-}
-
-export async function getSubscriptions(locals: App.Locals) {
-	const result = await fetch(BASE_URL + 'subscriptions', {
-		method: 'GET',
-		headers: headers(locals)
-	});
-	return redirectIf401(result);
-}
-
-export async function getNotifications(locals: App.Locals) {
-	const result = await fetch(BASE_URL + 'notifications', {
-		method: 'GET',
-		headers: headers(locals)
-	});
-	return redirectIf401(result);
-}
-
-export async function postSubscription(locals: App.Locals, publicToken: string) {
-	const result = await fetch(BASE_URL + 'subscription', {
-		method: 'POST',
-		headers: jsonHeaders(locals),
-		body: JSON.stringify({ publicToken })
-	});
-	return redirectIf401(result);
-}
-
-export async function postSubscriptionSynchronize(locals: App.Locals, subscriptionId: string) {
-	const result = await fetch(BASE_URL + `subscription/${subscriptionId}/synchronize`, {
-		method: 'POST',
-		headers: jsonHeaders(locals),
-		body: JSON.stringify({})
-	});
-	return redirectIf401(result);
-}
-
-function redirectIf401(result: Response): Response {
-	console.log(result);
+export function redirectIf401(result: Response): Response {
 	if (result.status === 401) {
 		redirect(307, '/authorize');
 	}
 	return result;
+}
+
+export function isAuthorizePath(request: Request): boolean {
+	return request.url.endsWith('/authorize');
+}
+
+export function authorize(cookies: Cookies): { jwt: string; tenant: string } {
+	const jwt = cookies.get('jwt');
+	const tenant = cookies.get('tenant');
+	if (!jwt || !tenant) {
+		redirect(303, '/authorize');
+	}
+	return { jwt, tenant };
+}
+
+export async function getSubscriptions(jwt: string, tenant: string): Promise<Response> {
+	return redirectIf401(
+		await fetch(BASE_URL + 'subscriptions', {
+			method: 'GET',
+			headers: headersGet(jwt, tenant)
+		})
+	);
+}
+
+export async function getNotifications(jwt: string, tenant: string): Promise<Response> {
+	return redirectIf401(
+		await fetch(BASE_URL + 'notifications', {
+			method: 'GET',
+			headers: headersGet(jwt, tenant)
+		})
+	);
 }

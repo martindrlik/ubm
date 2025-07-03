@@ -1,9 +1,17 @@
 import { json } from '@sveltejs/kit';
-import { postConfiguration } from '$lib/ubm.js';
+import { authorize, headersPostJson, redirectIf401 } from '$lib/ubm.js';
+import { BASE_URL } from '$env/static/private';
 
-export async function POST({ locals, request }) {
+export async function POST({ request, cookies }) {
+	const { jwt, tenant } = authorize(cookies);
 	const { callback } = await request.json();
-	const result = await postConfiguration(locals, callback);
+	const result = redirectIf401(
+		await fetch(BASE_URL + 'configuration', {
+			method: 'POST',
+			headers: headersPostJson(jwt, tenant),
+			body: JSON.stringify({ notificationCallbackUrl: callback })
+		})
+	);
 	if (result.status !== 200) {
 		const { errorMessage } = await result.json();
 		return json({ errorMessage }, { status: result.status });
