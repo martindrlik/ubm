@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/Button.svelte';
+	import CenterEnd from '$lib/CenterEnd.svelte';
 	import LabelInput from '$lib/LabelInput.svelte';
 	import type { PageProps } from './$types';
 
@@ -21,9 +22,9 @@
 				<LabelInput label="JWT" id="jwt" type="password" value={data.jwt} />
 			</div>
 
-			<div class="grid content-center">
+			<CenterEnd>
 				<Button label="Use" type="submit" />
-			</div>
+			</CenterEnd>
 		</form>
 	</div>
 </div>

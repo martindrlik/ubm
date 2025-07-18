@@ -2,6 +2,7 @@
 	import Button from '$lib/Button.svelte';
 	import CenterEnd from '$lib/CenterEnd.svelte';
 	import Heading2 from '$lib/Heading2.svelte';
+	import LabelInput from '$lib/LabelInput.svelte';
 	import LabelInputButton from '$lib/LabelInputButton.svelte';
 	import LabelSelect from '$lib/LabelSelect.svelte';
 	import Section from '$lib/Section.svelte';
@@ -24,6 +25,7 @@
 			? notifications.find((x: { notificationId: string }) => x.notificationId === notificationId)
 			: []
 	);
+	let notificationLimit = $state(1);
 
 	async function configure() {
 		const result = await fetch('/configure', {
@@ -103,7 +105,7 @@
 	}
 
 	async function getNotifications() {
-		const result = await fetch('/notification', {
+		const result = await fetch(`/notification?limit=${notificationLimit}`, {
 			method: 'GET'
 		});
 		const { errorMessage, notifications } = await result.json();
@@ -229,12 +231,24 @@
 
 		<Heading2>Notifications</Heading2>
 		<Section>
-			<LabelSelect
-				label="Selected Notification"
-				id="notifications"
-				bind:value={notificationId}
-				options={(notifications ?? []).map(notificationOption)}
-			/>
+			<div class="flex gap-2">
+				<div class="w-1/4">
+					<LabelInput
+						label="Notification Limit"
+						id="notification-limit"
+						type="number"
+						bind:value={notificationLimit}
+					/>
+				</div>
+				<div class="w-full">
+					<LabelSelect
+						label="Selected Notification"
+						id="notifications"
+						bind:value={notificationId}
+						options={(notifications ?? []).map(notificationOption)}
+					/>
+				</div>
+			</div>
 			<CenterEnd>
 				<div class="flex gap-2">
 					<Button label="Pull Notifications" onclick={pullNotifications} />

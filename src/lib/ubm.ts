@@ -45,9 +45,13 @@ export async function getSubscriptions(jwt: string, tenant: string): Promise<Res
 	);
 }
 
-export async function getNotifications(jwt: string, tenant: string): Promise<Response> {
+export async function getNotifications(
+	jwt: string,
+	tenant: string,
+	limit?: number
+): Promise<Response> {
 	return redirectIf401(
-		await fetch(BASE_URL + 'notifications', {
+		await fetch(BASE_URL + `notifications?limit=${limit}`, {
 			method: 'GET',
 			headers: headersGet(jwt, tenant)
 		})
