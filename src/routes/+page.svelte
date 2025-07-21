@@ -11,6 +11,7 @@
 	let { data }: PageProps = $props();
 
 	let callback = $state(`https://${data.tenant}.requestcatcher.com/callback`);
+	let countries = $state('');
 	let language = $state('EN');
 	let mostRecentSubscription = $state('');
 	let updateSubscription = $state('');
@@ -39,7 +40,7 @@
 	async function createLink() {
 		const result = await fetch('/link', {
 			method: 'POST',
-			body: JSON.stringify({ language, updateSubscription, updateMode })
+			body: JSON.stringify({ language, countries, updateSubscription, updateMode })
 		});
 		const { errorMessage, linkToken } = await result.json();
 		if (errorMessage !== undefined) {
@@ -188,6 +189,9 @@
 							'RO'
 						].map(simpleOption)}
 					/>
+				</div>
+				<div class="w-1/7">
+					<LabelInput label="Countries" id="countries" type="text" bind:value={countries} />
 				</div>
 				<div class="w-1/2">
 					<LabelSelect
