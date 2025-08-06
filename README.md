@@ -3,9 +3,9 @@
 Git clone and install:
 
 ```
-% git clone https://github.com/martindrlik/ubm.git
-% cd ubm
-% bun install
+git clone https://github.com/martindrlik/ubm.git
+cd ubm
+bun install
 ```
 
 Create or edit `.env`:
@@ -20,6 +20,6 @@ TENANT=foobar
 Run:
 
 ```
-% export NODE_TLS_REJECT_UNAUTHORIZED=0
-% bun run dev --open
+export NODE_TLS_REJECT_UNAUTHORIZED=0
+bun run dev --open
 ```
