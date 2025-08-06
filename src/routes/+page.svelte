@@ -17,7 +17,7 @@
 	let updateSubscription = $state('');
 	let updateMode = $state('');
 	let subscriptions = $state(data.subscriptions);
-	let synchronizeSubscription = $state('');
+	let subscriptionId = $state('');
 
 	let notificationId = $state('');
 	let notifications = $state(data.notifications);
@@ -57,13 +57,15 @@
 			onExit() {},
 			async onSuccess({ public_token }) {
 				handler.exit();
-				const result = await fetch('/subscription', {
-					method: 'POST',
-					body: JSON.stringify({ publicToken: public_token })
-				});
-				const { subscriptionId } = await result.json();
-				mostRecentSubscription = subscriptionId;
-				subscriptions = await getSubscriptions();
+				if (public_token) {
+					const result = await fetch('/subscription', {
+						method: 'POST',
+						body: JSON.stringify({ publicToken: public_token })
+					});
+					const { subscriptionId } = await result.json();
+					mostRecentSubscription = subscriptionId;
+					subscriptions = await getSubscriptions();
+				}
 			}
 		});
 
@@ -81,10 +83,24 @@
 	async function synchronize() {
 		const result = await fetch('/subscription/synchronize', {
 			method: 'POST',
-			body: JSON.stringify({ synchronizeSubscription })
+			body: JSON.stringify({ subscriptionId })
 		});
 		const { errorMessage } = await result.json();
 		alert(errorMessage === undefined ? 'Synchronization requested.' : errorMessage);
+	}
+
+	async function removeSubscription() {
+		const result = await fetch('/subscription/delete', {
+			method: 'POST',
+			body: JSON.stringify({ subscriptionId })
+		});
+		const { errorMessage } = await result.json();
+		if (errorMessage === undefined) {
+			subscriptions.splice(subscriptions.indexOf(subscriptionId), 1);
+			subscriptionId = subscriptions.length > 0 ? subscriptions[0].subscriptionId : '';
+		} else {
+			alert(errorMessage);
+		}
 	}
 
 	async function acknowledge() {
@@ -193,7 +209,7 @@
 				<div class="w-1/7">
 					<LabelInput label="Countries" id="countries" type="text" bind:value={countries} />
 				</div>
-				<div class="w-1/2">
+				<div class="w-full">
 					<LabelSelect
 						label="Update Mode"
 						id="update-mode"
@@ -203,33 +219,42 @@
 						)}
 					/>
 				</div>
+			</div>
 
-				<div>
-					<LabelSelect
-						label="Update Subscription"
-						id="update-subscription"
-						{isStar}
-						bind:value={updateSubscription}
-						options={(subscriptions ?? []).map(subscriptionOption)}
-					/>
-				</div>
+			<div>
+				<LabelSelect
+					label="Update Subscription"
+					id="update-subscription"
+					{isStar}
+					bind:value={updateSubscription}
+					options={(subscriptions ?? []).map(subscriptionOption)}
+				/>
 			</div>
 			<CenterEnd>
-				<Button label="Create Link" onclick={createLink} />
+				{#if updateMode}
+					<Button label="Update" onclick={createLink} />
+				{:else}
+					<Button label="Create" onclick={createLink} />
+				{/if}
 			</CenterEnd>
 		</Section>
 
-		<Heading2>Synchronize</Heading2>
+		<Heading2>Subscriptions</Heading2>
 		<Section>
 			<LabelSelect
-				label="Synchronize Subscription"
-				id="synchronize-subscription"
+				label="Subscription"
+				id="subscription"
 				{isStar}
-				bind:value={synchronizeSubscription}
+				bind:value={subscriptionId}
 				options={(subscriptions ?? []).map(subscriptionOption)}
 			/>
 			<CenterEnd>
-				<Button label="Synchronize" onclick={synchronize} />
+				<div class="flex gap-2">
+					{#if subscriptionId}
+						<Button label="Synchronize" onclick={synchronize} />
+						<Button label="Remove" onclick={removeSubscription} />
+					{/if}
+				</div>
 			</CenterEnd>
 		</Section>
 

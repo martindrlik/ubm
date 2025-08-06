@@ -5,10 +5,9 @@ import { BASE_URL } from '$env/static/private';
 export async function POST({ request, cookies }) {
 	const { jwt, tenant } = authorize(cookies);
 	const { subscriptionId } = await request.json();
-
 	const result = redirectIf401(
-		await fetch(BASE_URL + `subscription/${subscriptionId}/synchronize`, {
-			method: 'POST',
+		await fetch(BASE_URL + 'subscription/' + subscriptionId, {
+			method: 'DELETE',
 			headers: headersPostJson(jwt, tenant),
 			body: JSON.stringify({})
 		})
