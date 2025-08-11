@@ -103,12 +103,20 @@
 		}
 	}
 
+	async function acknowledgeAll() {
+		const notifications = await getNotifications(5000);
+		for (const it of notifications) {
+			const errorMessage = await tryAcknowledge(it.notificationId);
+			if (errorMessage) {
+				alert(errorMessage);
+			} else {
+				console.log(`Notification '${it.notificationId}' acknowledged.`);
+			}
+		}
+	}
+
 	async function acknowledge() {
-		const result = await fetch('/notification/ack', {
-			method: 'POST',
-			body: JSON.stringify({ notificationId })
-		});
-		const { errorMessage } = await result.json();
+		const errorMessage = await tryAcknowledge(notificationId);
 		if (errorMessage === undefined) {
 			notifications.splice(notifications.indexOf(notificationId), 1);
 			notificationId = notifications.length > 0 ? notifications[0].notificationId : '';
@@ -117,12 +125,21 @@
 		}
 	}
 
-	async function pullNotifications() {
-		notifications = await getNotifications();
+	async function tryAcknowledge(notificationId: string): Promise<string> {
+		const result = await fetch('/notification/ack', {
+			method: 'POST',
+			body: JSON.stringify({ notificationId })
+		});
+		const { errorMessage } = await result.json();
+		return errorMessage;
 	}
 
-	async function getNotifications() {
-		const result = await fetch(`/notification?limit=${notificationLimit}`, {
+	async function pullNotifications() {
+		notifications = await getNotifications(notificationLimit);
+	}
+
+	async function getNotifications(limit: number) {
+		const result = await fetch(`/notification?limit=${limit}`, {
 			method: 'GET'
 		});
 		const { errorMessage, notifications } = await result.json();
@@ -286,6 +303,7 @@
 						<Button label="PDF" onclick={() => download('Pdf')} />
 						<Button label="Acknowledge" onclick={acknowledge} />
 					{/if}
+					<Button label="Acknowledge All" onclick={acknowledgeAll} />
 				</div>
 			</CenterEnd>
 		</Section>
