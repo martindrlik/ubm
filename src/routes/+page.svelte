@@ -2,6 +2,7 @@
 	import Button from '$lib/Button.svelte';
 	import CenterEnd from '$lib/CenterEnd.svelte';
 	import Heading2 from '$lib/Heading2.svelte';
+	import LabelCheck from '$lib/LabelCheck.svelte';
 	import LabelInput from '$lib/LabelInput.svelte';
 	import LabelInputButton from '$lib/LabelInputButton.svelte';
 	import LabelSelect from '$lib/LabelSelect.svelte';
@@ -13,6 +14,7 @@
 	let callback = $state(`https://${data.tenant}.requestcatcher.com/callback`);
 	let countries = $state('');
 	let language = $state('EN');
+	let sourceRequest = $state(true);
 	let mostRecentSubscription = $state('');
 	let updateSubscription = $state('');
 	let updateMode = $state('');
@@ -40,7 +42,13 @@
 	async function createLink() {
 		const result = await fetch('/link', {
 			method: 'POST',
-			body: JSON.stringify({ language, countries, updateSubscription, updateMode })
+			body: JSON.stringify({
+				language,
+				countries,
+				updateSubscription,
+				updateMode,
+				sourceRequest
+			})
 		});
 		const { errorMessage, linkToken } = await result.json();
 		if (errorMessage !== undefined) {
@@ -225,6 +233,9 @@
 				</div>
 				<div class="w-1/7">
 					<LabelInput label="Countries" id="countries" type="text" bind:value={countries} />
+				</div>
+				<div class="w-1/7">
+					<LabelCheck label="Source Request" id="sourceRequest" bind:checked={sourceRequest} />
 				</div>
 				<div class="w-full">
 					<LabelSelect
